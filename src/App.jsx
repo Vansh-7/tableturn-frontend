@@ -126,11 +126,6 @@ const getTimeRemaining = (expiresAt) => {
     return `${hours}h ${minutes}m`;
 };
 
-const getRelativeTimeString = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + date.toLocaleDateString();
-};
-
 // --- Creative Components ---
 
 const OrganicCard = ({ children, className = "", onClick }) => (
@@ -162,25 +157,18 @@ const PillButton = ({ children, onClick, disabled, variant = 'primary', classNam
 // --- Enhanced Background Pattern ---
 const DoodlesBackground = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none mix-blend-multiply opacity-10">
-        {/* Row 1 */}
         <Pizza className="absolute top-[5%] left-[5%] w-24 h-24 text-black -rotate-12" strokeWidth={1.5} />
         <Coffee className="absolute top-[5%] left-[30%] w-20 h-20 text-black rotate-12" strokeWidth={1.5} />
         <Apple className="absolute top-[5%] left-[55%] w-24 h-24 text-black rotate-45" strokeWidth={1.5} />
         <Carrot className="absolute top-[5%] left-[80%] w-28 h-28 text-black -rotate-6" strokeWidth={1.5} />
-        
-        {/* Row 2 */}
         <Sandwich className="absolute top-[30%] left-[15%] w-24 h-24 text-black rotate-12" strokeWidth={1.5} />
         <Utensils className="absolute top-[30%] left-[40%] w-20 h-20 text-black -rotate-45" strokeWidth={1.5} />
         <Croissant className="absolute top-[30%] left-[65%] w-24 h-24 text-black rotate-6" strokeWidth={1.5} />
         <ChefHat className="absolute top-[30%] left-[90%] w-32 h-32 text-black rotate-3" strokeWidth={1} />
-        
-        {/* Row 3 */}
         <div className="absolute top-[55%] left-[5%] w-24 h-24 border-4 border-black rounded-full" />
         <Pizza className="absolute top-[55%] left-[30%] w-32 h-32 text-black rotate-180" strokeWidth={1.5} />
         <Apple className="absolute top-[55%] left-[55%] w-20 h-20 text-black -rotate-12" strokeWidth={1.5} />
         <Coffee className="absolute top-[55%] left-[80%] w-16 h-16 text-black rotate-12" strokeWidth={1.5} />
-        
-        {/* Row 4 */}
         <Circle className="absolute top-[80%] left-[20%] w-4 h-4 bg-black rounded-full" />
         <Circle className="absolute top-[80%] left-[50%] w-6 h-6 border-2 border-black rounded-full" />
         <Plus className="absolute top-[80%] left-[80%] w-8 h-8 text-black rotate-45" />
@@ -382,6 +370,23 @@ const LoginView = ({ handleLogin, handleSignup, loading }) => {
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
 
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    };
+
+    const handleSubmit = () => {
+        if (!validateEmail(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        if (isLogin) {
+            handleLogin(email, password);
+        } else {
+            handleSignup(name, email, password);
+        }
+    };
+
     return (
       <div className="h-screen w-screen bg-[#FFD700] flex flex-col md:flex-row overflow-hidden relative fixed inset-0">
         <DoodlesBackground />
@@ -449,7 +454,7 @@ const LoginView = ({ handleLogin, handleSignup, loading }) => {
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-6 py-4 rounded-[2rem] bg-gray-50 border-2 border-transparent focus:border-black focus:bg-white focus:outline-none font-bold text-lg transition-all placeholder:text-gray-300" placeholder="••••••••" />
                     </div>
                     
-                    <PillButton onClick={() => isLogin ? handleLogin(email, password) : handleSignup(name, email, password)} disabled={loading} className="w-full mt-4 justify-between group !py-5 text-lg">
+                    <PillButton onClick={handleSubmit} disabled={loading} className="w-full mt-4 justify-between group !py-5 text-lg">
                         <span>{loading ? 'Processing...' : (isLogin ? 'Enter Kitchen' : 'Start Sharing')}</span>
                         <div className="bg-white/20 p-2 rounded-full group-hover:translate-x-1 transition-transform">
                             <ArrowLeft className="w-5 h-5 rotate-180" />
@@ -487,10 +492,10 @@ const MapView = ({ currentUser, setView, setShowMenu, showMenu, setShowLocationM
                   {/* Center: Logo with Dual Tone */}
                   <div className="flex flex-col items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                       <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-[#1a1a1a] rounded-lg flex items-center justify-center shadow-sm -rotate-3 border border-white/20 drop-shawdow-md">
+                          <div className="w-8 h-8 bg-[#1a1a1a] rounded-lg flex items-center justify-center shadow-sm -rotate-3 border border-white/20">
                               <UtensilsCrossed className="w-4 h-4 text-[#FFD700]" strokeWidth={2.5} />
                           </div>
-                          <h1 className="text-xl font-black tracking-tighter text-[#1a1a1a] hidden sm:block">
+                          <h1 className="text-xl drop-shadow-sm font-black tracking-tighter text-[#1a1a1a] hidden sm:block">
                               TABLE<span className="text-white" style={{ WebkitTextStroke: '0px #1a1a1a' }}>TURN</span>
                           </h1>
                       </div>
@@ -824,6 +829,26 @@ const CreateListingView = ({ setView, handleCreateListing }) => {
 
     const handleSubmit = () => {
         if (!title || !description || !quantity || !dateValue || !image) return;
+        
+        // Validation: Quantity must be positive integer
+        const quantityNum = Number(quantity);
+        if (!Number.isInteger(quantityNum) || quantityNum <= 0) {
+            alert("Quantity must be a positive integer (e.g., 1, 2, 3).");
+            return;
+        }
+
+        // Validation: Price must be positive integer (assuming 'Free' logic handled separately or price > 0)
+        // The prompt asked for "positive integers" constraint for price too. 
+        // If user enters 0, it's not positive. Let's enforce > 0.
+        const priceNum = Number(price);
+        if (!Number.isInteger(priceNum) || priceNum <= 0) {
+             alert("Price must be a positive integer. Use 0 if you intended 'Free' but the constraint requires positive.");
+             // To strictly follow "positive integer", 0 is not positive. 
+             // However, for a food app, 0 usually means free. 
+             // I will alert for now.
+             return;
+        }
+
         let calculatedExpiry = new Date().toISOString();
         if (dateMode === 'expiry') {
             calculatedExpiry = new Date(dateValue).toISOString();
@@ -832,7 +857,11 @@ const CreateListingView = ({ setView, handleCreateListing }) => {
             madeDate.setHours(madeDate.getHours() + (type === 'prepared' ? 4 : 48));
             calculatedExpiry = madeDate.toISOString();
         }
-        handleCreateListing({ title, description, quantity, price: price || 'Free', type, image, expiresAt: calculatedExpiry, dietary: [] });
+        
+        // Formatting price back to string with currency for display consistency
+        const formattedPrice = `₹${price}`;
+
+        handleCreateListing({ title, description, quantity: quantity + " servings", price: formattedPrice, type, image, expiresAt: calculatedExpiry, dietary: [] });
     };
 
     return (
@@ -890,11 +919,11 @@ const CreateListingView = ({ setView, handleCreateListing }) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase ml-4 text-gray-400 tracking-widest">Qty</label>
-                <input type="text" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="2 kg" className="w-full px-6 py-5 rounded-[2rem] bg-gray-50 border-2 border-transparent focus:border-[#1a1a1a] focus:bg-white focus:outline-none font-bold transition-all" />
+                <input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="2" className="w-full px-6 py-5 rounded-[2rem] bg-gray-50 border-2 border-transparent focus:border-[#1a1a1a] focus:bg-white focus:outline-none font-bold transition-all" />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase ml-4 text-gray-400 tracking-widest">Price</label>
-                <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Free" className="w-full px-6 py-5 rounded-[2rem] bg-gray-50 border-2 border-transparent focus:border-[#1a1a1a] focus:bg-white focus:outline-none font-bold transition-all" />
+                <input type="number" min="1" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="50" className="w-full px-6 py-5 rounded-[2rem] bg-gray-50 border-2 border-transparent focus:border-[#1a1a1a] focus:bg-white focus:outline-none font-bold transition-all" />
               </div>
             </div>
 
@@ -1241,5 +1270,5 @@ const App = () => {
     </div>
   );
 };
-
+//
 export default App;
