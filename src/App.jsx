@@ -1,5 +1,5 @@
-import { Apple, ArrowLeft, Calendar, Carrot, ChefHat, ChevronRight, Circle, Clock, Coffee, Croissant, Filter, Heart, Link, List, Locate, LogOut, MapPin, Menu, MessageCircle, Minus, Navigation, Pizza, Plus, RefreshCw, Sandwich, Search, Send, Share2, ShoppingBag, Star, Trash2, Twitter, Upload, User, Utensils, UtensilsCrossed, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { MapPin, Plus, X, Send, Star, User, LogOut, Menu, Filter, Clock, ArrowLeft, Navigation, ShoppingBag, List, Search, Calendar, MessageCircle, Upload, Locate, Minus, Circle, Heart, ChevronRight, Pizza, Coffee, Apple, Carrot, Sandwich, Utensils, Croissant, ChefHat, UtensilsCrossed, Link, Twitter, Share2, RefreshCw, Trash2, XCircle } from 'lucide-react';
 
 // --- Mock Data ---
 const INITIAL_LISTINGS = [
@@ -487,11 +487,11 @@ const MapView = ({ currentUser, setView, setShowMenu, showMenu, setShowLocationM
                   {/* Center: Logo with Dual Tone */}
                   <div className="flex flex-col items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                       <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-[#1a1a1a] rounded-lg flex items-center justify-center shadow-sm -rotate-3 border border-white/20">
+                          <div className="w-8 h-8 bg-[#1a1a1a] rounded-lg flex items-center justify-center shadow-sm -rotate-3 border border-white/20 drop-shawdow-md">
                               <UtensilsCrossed className="w-4 h-4 text-[#FFD700]" strokeWidth={2.5} />
                           </div>
-                          <h1 className="text-xl font-black tracking-tighter text-[#1a1a1a] hidden sm:block drop-shadow-sm">
-                              TABLE<span className="text-white drop-shadow-sm" style={{ WebkitTextStroke: '0px #1a1a1a' }}>TURN</span>
+                          <h1 className="text-xl font-black tracking-tighter text-[#1a1a1a] hidden sm:block">
+                              TABLE<span className="text-white" style={{ WebkitTextStroke: '0px #1a1a1a' }}>TURN</span>
                           </h1>
                       </div>
                   </div>
@@ -648,7 +648,7 @@ const DetailView = ({ selectedListing, setView, currentUser, handleClaimListing,
         <div className="relative h-[50vh] w-full bg-gray-900 overflow-hidden">
             {/* Background Blur Layer */}
             <div className="absolute inset-0">
-                <img src={selectedListing?.image} className="w-full h-full object-cover blur-2xl opacity-100 scale-110" />
+                <img src={selectedListing?.image} className="w-full h-full object-cover blur-3xl opacity-100 scale-110" />
             </div>
             {/* Gradient Overlay for Text Readability */}
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
@@ -919,7 +919,7 @@ const CreateListingView = ({ setView, handleCreateListing }) => {
     );
 };
 
-const MyListingsView = ({ myListings, setView, onRelist }) => (
+const MyListingsView = ({ myListings, setView, onRelist, onDelete }) => (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col">
        <header className="bg-white px-4 py-6 flex items-center gap-4 sticky top-0 z-20 border-b border-gray-100">
           <button onClick={() => setView('map')} className="p-3 hover:bg-gray-50 rounded-full transition-colors">
@@ -952,18 +952,30 @@ const MyListingsView = ({ myListings, setView, onRelist }) => (
                          {listing.status}
                        </span>
                     </div>
-                    {listing.status === 'claimed' && (
-                        <button 
+                    <div className="flex flex-col gap-2 items-end">
+                        {listing.status === 'claimed' && (
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    onRelist(listing.id);
+                                }}
+                                className="text-[10px] font-bold text-red-500 border-2 border-red-100 bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 hover:border-red-200 transition-colors flex items-center gap-1"
+                            >
+                                <RefreshCw className="w-3 h-3" />
+                                Deal Cancelled?
+                            </button>
+                        )}
+                         <button 
                             onClick={(e) => {
                                 e.stopPropagation(); 
-                                onRelist(listing.id);
+                                onDelete(listing.id);
                             }}
-                            className="text-[10px] font-bold text-red-500 border-2 border-red-100 bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 hover:border-red-200 transition-colors flex items-center gap-1"
+                            className="text-[10px] font-bold text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1 p-1"
+                            title="Delete Listing"
                         >
-                            <RefreshCw className="w-3 h-3" />
-                            Deal Cancelled?
+                            <Trash2 className="w-4 h-4" />
                         </button>
-                    )}
+                    </div>
                 </div>
                 <div className="flex justify-between items-end mt-3 border-t border-gray-50 pt-3">
                     <p className="text-sm font-black text-[#1a1a1a]">{listing.price}</p>
@@ -979,7 +991,7 @@ const MyListingsView = ({ myListings, setView, onRelist }) => (
     </div>
 );
 
-const MyOrdersView = ({ myOrders, setView, onRateClick }) => (
+const MyOrdersView = ({ myOrders, setView, onRateClick, onCancelOrder }) => (
     <div className="min-h-screen bg-[#FDFDFD] flex flex-col">
        <header className="bg-white px-4 py-6 flex items-center gap-4 sticky top-0 z-20 border-b border-gray-100">
           <button onClick={() => setView('map')} className="p-3 hover:bg-gray-50 rounded-full transition-colors">
@@ -1010,7 +1022,10 @@ const MyOrdersView = ({ myOrders, setView, onRateClick }) => (
                         <h3 className="font-bold text-lg text-[#1a1a1a] leading-tight mb-2 line-clamp-1">{listing.title}</h3>
                         <span className="text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-wider bg-[#1a1a1a] text-white">Claimed</span>
                     </div>
-                    <button onClick={() => onRateClick(listing)} className="text-xs font-bold text-[#1a1a1a] border-2 border-[#1a1a1a] px-3 py-1 rounded-full hover:bg-[#1a1a1a] hover:text-white transition-colors">Rate Seller</button>
+                    <div className="flex flex-col gap-2 items-end">
+                        <button onClick={() => onRateClick(listing)} className="text-xs font-bold text-[#1a1a1a] border-2 border-[#1a1a1a] px-3 py-1 rounded-full hover:bg-[#1a1a1a] hover:text-white transition-colors">Rate Seller</button>
+                        <button onClick={(e) => { e.stopPropagation(); onCancelOrder(listing.id); }} className="text-xs font-bold text-red-500 border-2 border-red-100 px-3 py-1 rounded-full hover:bg-red-50 transition-colors flex items-center gap-1"><XCircle className="w-3 h-3" /> Cancel</button>
+                    </div>
                 </div>
                 <div className="flex items-center gap-1 text-xs font-bold text-gray-400 mt-4 uppercase tracking-wide">
                     <MapPin className="w-3.5 h-3.5" /> <span className="line-clamp-1">{listing.location.address}</span>
@@ -1159,6 +1174,16 @@ const App = () => {
           setListings(prev => prev.filter(item => item.id !== id));
       }
   };
+  
+  const handleCancelOrder = (id) => {
+      if (window.confirm("Are you sure you want to cancel this order?")) {
+          const updatedListings = listings.map(l => 
+              l.id === id ? { ...l, status: 'available', claimedBy: null } : l
+          );
+          setListings(updatedListings);
+          alert("Order cancelled successfully.");
+      }
+  };
 
   // Logic
   const filteredListings = listings.filter(l => {
@@ -1185,7 +1210,7 @@ const App = () => {
       )}
 
       {currentUser && view === 'myListings' && <MyListingsView myListings={myListings} setView={setView} onRelist={handleRelist} onDelete={handleDeleteListing} />}
-      {currentUser && view === 'myOrders' && <MyOrdersView myOrders={myOrders} setView={setView} onRateClick={handleRateClick} />}
+      {currentUser && view === 'myOrders' && <MyOrdersView myOrders={myOrders} setView={setView} onRateClick={handleRateClick} onCancelOrder={handleCancelOrder} />}
       {currentUser && view === 'wishlist' && <WishlistView wishlist={wishlist} listings={listings} setView={setView} />}
       
       {currentUser && view === 'detail' && (
